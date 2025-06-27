@@ -80,7 +80,7 @@ export const login = async (req, res) => {
         }
 
         // if password matched
-        const payload = {id:existingUser._id,email:existingUser.email}
+        const payload = {id:existingUser._id,email:existingUser.email,role:existingUser.role}
         const token = jwt.sign(payload,process.env.JWT_SECRET,{expiresIn:"1d"});
         res.cookie("token",token,{
             httpOnly:true,
