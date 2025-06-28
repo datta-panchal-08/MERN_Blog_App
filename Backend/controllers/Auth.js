@@ -3,50 +3,55 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 export const signup = async (req, res) => {
-    try {
-        const { username, email, password } = req.body;
-        const imagePath = req.file.filename;
+  try {
+    const { username, email, password } = req.body;
+    const imagePath = req.file.filename;
 
-        if (!username || !email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: "Required all fields"
-            })
-        }
-
-        // checking if user is already registerd 
-        const existingUser = await User.findOne({ email });
-
-        if (existingUser) {
-            return res.status(400).json({
-                success: false,
-                message: "user already registered"
-            });
-        }
-
-
-
-        // Hashing Password using bcrypt
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // registering new user
-        const user = await User.create({ username, email, password: hashedPassword, profile: imagePath });
-        await user.save();
-
-        res.status(200).json({
-            success: true,
-            message: "registerd user",
-            user
-        });
-
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({
-            success: false,
-            message: error.message || "Something went wrong"
-        })
+    if (!username || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Required all fields"
+      });
     }
-}
+
+    // checking if user is already registered 
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "user already registered"
+      });
+    }
+
+    // Hashing Password using bcrypt
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // registering new user
+    const user = await User.create({
+      username,
+      email,
+      password: hashedPassword,
+      profile: imagePath
+    });
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "registered user",
+      user
+    });
+
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Something went wrong"
+    });
+  }
+};
+
 
 export const login = async (req, res) => {
     try {
