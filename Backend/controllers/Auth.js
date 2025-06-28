@@ -91,11 +91,11 @@ export const login = async (req, res) => {
             message:"Login successfull",
             success:true,
             user:{
+                profile:existingUser.profile,
                 username:existingUser.username,
                 email:existingUser.email,
                 role:existingUser.role
             },
-            token
         })
 
     } catch (error) {

@@ -6,8 +6,8 @@ const router = express.Router();
 
 router.post("/create",verifyToken,isAdmin,upload.single("postimage"),create);
 router.delete("/delete/:id",verifyToken,isAdmin,deleteBlog);
-router.get("/blogs",verifyToken,getPosts);
+router.get("/blogs",getPosts);
 router.patch('/update/:id',verifyToken,isAdmin,upload.single("postimage"),update);
-router.get("/:id",verifyToken,getblogbyid);
+router.get("/:id",getblogbyid);
 
 export default router;
