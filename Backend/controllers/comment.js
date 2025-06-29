@@ -11,48 +11,77 @@ export const create = async (req, res) => {
             return res.status(400).json({
                 message: "All fields are required",
                 success: false
-            })
+            });
         }
 
-        const newcomment = await Comment.create({
+        // Step 1: Check if blog exists first
+        const existingPost = await Blog.findById(blogId);
+        if (!existingPost) {
+            return res.status(404).json({
+                message: "Blog not found",
+                success: false
+            });
+        }
+
+        // Step 2: Create comment
+        const newComment = await Comment.create({
             blogId,
-            userId: userId,
-            comment
+            userId,
+            comment: comment.trim()
         });
 
-        await newcomment.save();
-        
-        const existingpost = await Blog.findById(blogId);
 
-        if(!existingpost){
-            return res.status(404).json({
-                message:"blog not found",
-                success:false
-            })
-        }else{
-            existingpost.comments.push(newcomment._id);
-            await existingpost.save();
-        }
+        // Step 3: Add comment reference to blog
+        existingPost.comments.push(newComment._id);
+        await existingPost.save();
 
         res.status(200).json({
-            message: "added comment",
+            message: "Comment added successfully",
             success: true,
-            newcomment
+            comment: newComment
         });
 
     } catch (error) {
-        console.error("comment error:", error);
+        console.error("Comment creation error:", error);
         res.status(500).json({
             message: "Internal Server Error",
             success: false
         });
     }
-}
+};
 
-export const deletecomment = async(req,res)=>{
+
+export const deletecomment = async (req, res) => {
     try {
-        
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json({
+                message: "required id",
+                success: false
+            })
+        }
+
+        const commentExists = await Comment.findById(id);
+
+        if(!commentExists){
+            return res.status(404).json({
+              success:false,
+              message:"comment not found"
+            })
+        }
+
+        await Comment.findByIdAndDelete({_id:commentExists._id});
+
+        res.status(200).json({
+            message:"comment deleted successfully"
+        })
+
     } catch (error) {
-        
+        console.error("Comment deletion error:", error);
+        res.status(500).json({
+            message: "Internal Server Error",
+            success: false
+        });
     }
 }

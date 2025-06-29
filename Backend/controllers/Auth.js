@@ -96,6 +96,7 @@ export const login = async (req, res) => {
             message:"Login successfull",
             success:true,
             user:{
+                _id:existingUser._id,
                 profile:existingUser.profile,
                 username:existingUser.username,
                 email:existingUser.email,

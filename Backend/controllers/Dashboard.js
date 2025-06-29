@@ -1,5 +1,6 @@
 import { Blog } from '../models/blog.js';
 import { User } from '../models/user.js';
+import {Comment} from '../models/comments.js';
 import path from 'path';
 import fs from 'fs';
 
@@ -7,12 +8,14 @@ export const getalldata = async (req, res) => {
     try {
         const users = await User.find({});
         const posts = await Blog.find({});
+        const comments = await Comment.find({});
 
         res.status(200).json({
             message: "all users and posts fetched",
             success: true,
             posts,
-            users
+            users,
+            comments
         })
 
     } catch (error) {
@@ -30,7 +33,8 @@ export const getallusers = async (req, res) => {
 
         res.status(200).json({
             message: "all users fetched",
-            success: true
+            success: true,
+            users
         })
 
     } catch (error) {
@@ -45,57 +49,69 @@ export const getallusers = async (req, res) => {
 export const deleteuser = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id);
-    
 
-    // 🔎 Check if ID is provided
+    // 🔍 1. Check ID
     if (!id) {
       return res.status(400).json({
         message: "Please provide user ID",
-        success: false
+        success: false,
       });
     }
 
+    // 🔍 2. Find User
     const user = await User.findById(id);
-    
     if (!user) {
       return res.status(404).json({
         message: "User not found",
-        success: false
+        success: false,
       });
     }
-   
-    if(user.profile){
-          const imagePath = path.join("public", "images", user.profile);
-    
-            fs.unlink(imagePath, (err) => {
-                if (err) {
-                    console.error("Error deleting image:", err);
-                } else {
-                    console.log("Image deleted successfully");
-                }
-            });
-    } 
 
+    // ❌ Prevent admin deletion
     if (user.role === "admin") {
       return res.status(400).json({
         message: "Admins cannot be deleted",
-        success: false
+        success: false,
       });
     }
 
+    // 🧹 3. Delete Profile Image (if exists)
+    if (user.profile) {
+      const imagePath = path.join("public", "images", user.profile);
+      fs.unlink(imagePath, (err) => {
+        if (err) console.error("Error deleting image:", err);
+        else console.log("User image deleted");
+      });
+    }
+
+    // 🧹 4. Get all comment IDs made by user
+    const userComments = await Comment.find({ userId: id });
+    const commentIds = userComments.map((comment) => comment._id);
+
+    // 🧹 5. Delete user's comments
+    await Comment.deleteMany({ userId: id });
+
+    // 🧹 6. Remove comment references from blogs
+    await Blog.updateMany(
+      {},
+      { $pull: { comments: { $in: commentIds } } }
+    );
+
+    // ✅ 7. Delete the user
     await User.findByIdAndDelete(id);
 
-    res.status(200).json({
-      message: "User deleted successfully",
-      success: true
+    // ✅ 8. Response
+    return res.status(200).json({
+      message: "User and related comments deleted successfully",
+      success: true,
     });
 
   } catch (error) {
     console.error("Delete user error:", error);
     res.status(500).json({
       message: "Internal Server Error",
-      success: false
+      success: false,
     });
   }
 };
+

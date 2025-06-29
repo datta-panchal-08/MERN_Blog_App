@@ -72,7 +72,7 @@ export const deleteBlog = async (req, res) => {
 
         // ✅ Send response
         res.status(200).json({
-            message: "Blog and associated image deleted successfully",
+            message: "Post deleted successfully",
             success: true
         });
 
