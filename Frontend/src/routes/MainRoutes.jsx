@@ -27,6 +27,7 @@ const MainRoutes = () => {
           <Route path='create-post' element={<CreatePost />} />
           <Route path='all-posts' element={<AllPosts />} />
           <Route path='users' element={<Users />} />
+          <Route path='update-post/:id' element={<CreatePost/>}/>
         </Route>
 
         {/* Auth Pages */}

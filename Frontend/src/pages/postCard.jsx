@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { dele, ImageUrl } from '../services/Endpoint'
 import { useDispatch, useSelector } from 'react-redux'
 import { AiFillDelete } from "react-icons/ai";
@@ -10,18 +10,22 @@ import { toast } from 'react-toastify';
 const PostCard = ({ post }) => {
   const { user } = useSelector(state => state.auth);
   const dispatch = useDispatch();
+  const { pathname } = useLocation();
+  const finalPath = pathname.includes("/all-posts")
+  ? `/dashboard/update-post/${post._id}`
+  : `/dashboard/update-post/${post._id}`;
 
   const handleDelete = async (id) => {
     try {
-       const res = await dele(`/blog/delete/${id}`);
-       
-       if(res.status === 200){
+      const res = await dele(`/blog/delete/${id}`);
+
+      if (res.status === 200) {
         toast.success(res.data.message);
         dispatch(setApiRefresher());
-       }
+      }
     } catch (error) {
-        const errMsg = error?.response?.data?.message || "Something went wrong!";
-             toast.error(errMsg);
+      const errMsg = error?.response?.data?.message || "Something went wrong!";
+      toast.error(errMsg);
     }
   }
 
@@ -33,7 +37,7 @@ const PostCard = ({ post }) => {
         </Link>
       </div>
       <div className="content px-2 flex-col gap-1">
-        <h1 className='text-[17px] font-semibold '>{post.title.slice(0,21)}...</h1>
+        <h1 className='text-[17px] font-semibold '>{post.title.slice(0, 21)}...</h1>
         {
           user.role === "admin" ? <p className='text-sm leading-4.5'>
             {post.description.slice(0, 150)}...
@@ -58,7 +62,7 @@ const PostCard = ({ post }) => {
 
               {/* Edit Button */}
               <Link
-                to={`/edit-post/${post._id}`}
+                to={finalPath}
                 className="flex items-center gap-2 bg-yellow-400 cursor-pointer hover:bg-yellow-500 text-black text-sm px-4 py-1 rounded-md transition-all duration-300"
                 title="Edit Post"
               >

@@ -49,7 +49,7 @@ export const deleteBlog = async (req, res) => {
             });
         }
 
-        // 🔍 Find and delete the blog
+        //  Find and delete the blog
         const blog = await Blog.findByIdAndDelete(id);
 
         if (!blog) {
@@ -59,7 +59,7 @@ export const deleteBlog = async (req, res) => {
             });
         }
 
-        // 🧹 Delete the image from "public/images"
+        //  Delete the image from "public/images"
         const imagePath = path.join("public", "images", blog.image);
 
         fs.unlink(imagePath, (err) => {
@@ -70,7 +70,7 @@ export const deleteBlog = async (req, res) => {
             }
         });
 
-        // ✅ Send response
+        // Send response
         res.status(200).json({
             message: "Post deleted successfully",
             success: true
@@ -116,7 +116,7 @@ export const update = async (req, res) => {
         const { id } = req.params;
         const { title, description } = req.body;
 
-        const findPost = await Blog.findById(id); // ✅ fix
+        const findPost = await Blog.findById(id); 
 
         if (!findPost) {
             return res.status(404).json({
@@ -125,7 +125,7 @@ export const update = async (req, res) => {
             });
         }
 
-        // 🧹 If new image is uploaded, delete old one
+        // If new image is uploaded, delete old one
         if (req.file) {
             const oldImagePath = path.join("public", "images", findPost.image);
             fs.unlink(oldImagePath, (err) => {
@@ -139,7 +139,7 @@ export const update = async (req, res) => {
             findPost.image = req.file.filename;
         }
 
-        // ✍️ Update title/description only if provided
+        //  Update title/description only if provided
         if (title) findPost.title = title;
         if (description) findPost.description = description;
 

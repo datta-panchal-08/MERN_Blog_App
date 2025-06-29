@@ -50,7 +50,7 @@ export const deleteuser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 🔍 1. Check ID
+    //  Check ID
     if (!id) {
       return res.status(400).json({
         message: "Please provide user ID",
@@ -58,7 +58,7 @@ export const deleteuser = async (req, res) => {
       });
     }
 
-    // 🔍 2. Find User
+    //  Find User
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({
@@ -67,7 +67,7 @@ export const deleteuser = async (req, res) => {
       });
     }
 
-    // ❌ Prevent admin deletion
+    //  Prevent admin deletion
     if (user.role === "admin") {
       return res.status(400).json({
         message: "Admins cannot be deleted",
@@ -75,7 +75,7 @@ export const deleteuser = async (req, res) => {
       });
     }
 
-    // 🧹 3. Delete Profile Image (if exists)
+    //  Delete Profile Image (if exists)
     if (user.profile) {
       const imagePath = path.join("public", "images", user.profile);
       fs.unlink(imagePath, (err) => {
@@ -84,11 +84,11 @@ export const deleteuser = async (req, res) => {
       });
     }
 
-    // 🧹 4. Get all comment IDs made by user
+    //  Get all comment IDs made by user
     const userComments = await Comment.find({ userId: id });
     const commentIds = userComments.map((comment) => comment._id);
 
-    // 🧹 5. Delete user's comments
+    //  Delete user's comments
     await Comment.deleteMany({ userId: id });
 
     // 🧹 6. Remove comment references from blogs
@@ -97,10 +97,10 @@ export const deleteuser = async (req, res) => {
       { $pull: { comments: { $in: commentIds } } }
     );
 
-    // ✅ 7. Delete the user
+    //  Delete the user
     await User.findByIdAndDelete(id);
 
-    // ✅ 8. Response
+    //  Response
     return res.status(200).json({
       message: "User and related comments deleted successfully",
       success: true,
